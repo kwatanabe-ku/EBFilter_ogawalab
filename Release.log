@@ -1,0 +1,38 @@
+ebfilter
+
+ v0.2.5 2023/05/18
+*P-value(EBCall)_all / MaxVariantReadInRefs_all / MaxVariantRateInRefs_all列を出力
+　mapping quality, base qualityを無視して全てのリードをカウントして計算した結果を出力する
+*MaxVariantReadInRefs_strict / MaxVariantRateInRefs_strict列を出力
+　indelが完全マッチしたリードをカウントして出力する
+
+ v0.2.4 2023/01/17
+
+*pysam, samtools両方の方法でできるように修正
+ --methodでpysam, samtoolsを指定できる
+ 指定しない場合、変異リストをもとにsingleかpair解析かを判定し、pair解析の場合はpysam, singleの場合はsamtoolsを使用する（変異数が少ない場合はpysam, 多い場合はsamtoolsのほうが速いため）
+
+ v0.2.3 2023/01/14
+
+*--epsilonオプションの追加とhigh depthな解析への対応
+ epsilonとは、リファレンスサンプルのdepthとvariant readの数をもとにbeta-binomial分布にフィッティングする際の勾配計算に使うstep size。デフォルトでは1e-8だが、リファレンスにvariant readがほぼない場合、depthが300を超えると結果が不安定になりはじめ、1000を超えると結果が不安定なだけでなくdepthが高いほど検出感度が低くなるという問題があった。おそらく小さすぎると局所解に陥りやすくなってしまうのだと思われる。
+検討の結果、epsilonに1e-5を指定すると少なくともdepth<10000までは上記のような問題が起きなくなることが判明。deep sequencingでは--epsilon 1e-5を指定することを推奨する。
+EBcallにはconfigファイルから直接オプションを指定できないが、filter_flagsの最後に付け加えて記載することにより（結果的に）EBcallに任意の引数を渡せるので、これを利用してオプションを指定する。
+WESやWGSなどdepth:100程度までであれば、epsilonがデフォルトの1e-8と1e-5で誤差程度の差しかでないため、指定してもしなくてもどちらでもよい。
+*samtoolsではなくpysamを使用するように修正→高速になった
+ また、変異候補数が多い場合にメモリ使用量が増えてしまっていた問題を修正
+*-t (thread)が有効になるように修正　MAXでreferenceの数+1まで有効
+*--debug を指定すると、最後の列にリファレンスにおけるvariant read/depthをカンマ連結で全て出力する。列のheaderは出力されないため、以降の列がずれることに注意（HGVDを出力する場合など）。
+
+v0.2.2 2022/11/28
+
+!注意:このversionのebfilterはvcfフォーマットに対応していません
+
+*overlapがある場合の処理を変更した
+ 以前overlapがあると+鎖のみカウントされていたが、+鎖/-鎖の両方でdepth/variant readをカウントするように修正した
+*高速化を行った
+ samtoolsをreferenceファイルごとに別スレッドで行っている
+ （Disk I/Oが一番のボトルネックになっているため、1コアでも別スレッドで行うだけで高速化につながる）
+ （なお、-tで多スレッドにするとそれぞれのスレッドがすべてのreferenceファイルにアクセスしようとするので非効率）
+*その他内部処理を整理した
+  

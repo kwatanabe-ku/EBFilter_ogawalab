@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/ken0-1n/EBFilter.svg?branch=devel)](https://travis-ci.org/ken0-1n/EBFilter) 
-
 # EBFilter (Empirical Bayesian Mutation Filtering)
 
 ## Introduction
@@ -43,6 +41,11 @@ Therefore, we decided to implement a software which just perform beta-binomial s
 Therefore, you can use this software after performing popular mutation callers (e.g., mutects, VarScan2,and so on),
 or your own inhouse mutation calling program, which we believe will reduce large parts of false positives.
 
+# Features of this version.
+This version is modified for use in ogawa-lab and includes the following changes.
+- Stable results are produced even with high depth samples.
+- Optimised handling of overlapping reads.
+- Reduced file access load and increased speed.
 
 
 ## Dependency
@@ -51,21 +54,8 @@ or your own inhouse mutation calling program, which we believe will reduce large
 [samtools](http://www.htslib.org/)
 
 ### Python
-EBFilter >= 0.2.2
-Python (>= 3.7), `pysam`, `scipy`, `numpy`, `vcfpy` packages
+Python (>= 2.7), `pysam`, `scipy`, `numpy` packages
 
-EBFilter <= 0.2.1
-Python (>= 2.7), `pysam`, `scipy`, `numpy`, `pyVCF` packages
-
-
-## Install
-
-```
-git clone https://github.com/friend1ws/EBFilter.git
-cd EBFilter
-python setup.py build
-python setup.py install
-```
 
 ## Preparation
 - add path to samtools.
@@ -79,39 +69,12 @@ python setup.py install
 		/home/yshira/ngs/data/sequence/normalreference10.bam
 
 ## Commands
-    EBFilter [-h] [--version] [-f {vcf,anno}] [-t thread_num]
+    EBFilter_0.2.5 [-h] [--version] [-t thread_num]
                 [-q mapping_qual_thres] [-Q base_qual_thres] [-ff filter_flags]
-                [--loption] [--region REGION] [--debug]
-                target.vcf target.bam controlBam_list.txt output.vcf
-- **-f**: input mutation data format (indexed vcf format or annovar format) [default: vcf]
-- **-q**: The threshold of mapping quality. The short reads wholse mapping quality are smaller than this value are skipped [default: 20].
-- **-Q**: The threshold of base quality. The bases whose base quality are smaller than this value are skipped [default: 15].
-- **-t**: The number of threads [default: 1].
-- **--ff**: skip reads with mask bits set. [default: UNMAP,SECONDARY,QCFAIL,DUP] 
-- **--loption**: If this option is on, -l option in samtools mpileup is used. In the default settings, EBFilter calculate the bases for each option repeatedly using samtools mpileup with -r option. This is suitable for investigating small number of mutation, However, using --loption is highly recomended for large number of mutations and will be effective when combining --region option below.
-- **--region**: speficify genomic region for investigation.
-- **--debug**: do not delete intermediate file (for mainly debugging).
-
-When finished, the output.vcf includes the score calculated by validation by beta-binomial sequencing error model (**EB** tag).
+                [--loption] [--region REGION] [--epsilon EPSILON] [--method METHOD] [--debug]
+                target.tsv target.bam controlBam_list.txt output.tsv
 
 
-
-## Test run
-
-We provide a set of test data files in the testdata directory.
-Type the following command after installing EBFilter:
-	
-	EBFilter testdata/input.vcf.gz testdata/tumor.bam testdata/list_normal_sample.txt output.vcf
-	
-Or for the annovar format:
-
-	EBFilter -f anno testdata/input.anno testdata/tumor.bam testdata/list_normal_sample.txt output.anno
-	
-Then, compare the result with the golden-standard output in the testdata directory
-
-	testdata/output.golden.vcf
-	testdata/output.golden.anno
-	
 
 
 
